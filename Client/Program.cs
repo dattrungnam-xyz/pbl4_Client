@@ -454,6 +454,7 @@ namespace Client
             {
                 client.Close();
                 isRunning= false;
+                driver.Quit();
                 Environment.Exit(0);
             }
             else if(command.StartsWith("http"))
@@ -528,7 +529,7 @@ namespace Client
                 // Bind the client to the local endpoint
                 client.Client.Bind(localEndPoint);
 
-                client.Connect("192.168.1.103", PORT_NUMBER);
+                client.Connect("192.168.1.101", PORT_NUMBER);
                 Stream stream = client.GetStream();
                 //Console.WriteLine("connect xong socket");
                 byte[] data;
